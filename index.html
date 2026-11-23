@@ -205,6 +205,7 @@ body.dropping::after{content:"Drop playlist and music folder here";position:fixe
       <button class="icon" id="btnNext" type="button" aria-label="Next track"></button>
     </div>
     <div class="mt">
+      <label>Auto-gain <select id="agSel" title="Evens out the loudness of the tracks while you listen. Does not change your files or the export."><option value="off">Off</option><option value="light">Light</option><option value="full">Full</option></select><span class="muted" id="agInfo"></span></label>
       <label><input type="checkbox" id="mtOn"> Master tempo</label>
       <input type="number" id="mtBpm" value="125" min="60" max="200" step="0.5" aria-label="Master tempo in BPM">
       <span class="muted">BPM</span>
@@ -518,10 +519,53 @@ function toast(msg){
 function pushUndo(){ undoStack.push(order.slice()); if(undoStack.length > 30) undoStack.shift(); }
 const tick = () => new Promise(r => setTimeout(r, 0));
 
+/* ---------- Auto-Gain (nur fuers Vorhoeren) ---------- */
+const MAX_TRACKS = 100;
+let cutFrom = 0;
+let agMode = 'full';
+try{ const s = localStorage.getItem('setra.autogain'); if(s === 'off' || s === 'light' || s === 'full') agMode = s; }catch(e){}
+let pCtx = null, pGain = null, pLim = null, limOn = false;
+function ensurePlaybackGraph(){
+  if(pGain) return true;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext; pCtx = new AC();
+    const src = pCtx.createMediaElementSource(audio);
+    pGain = pCtx.createGain();
+    pLim = pCtx.createDynamicsCompressor();
+    pLim.threshold.value = -2; pLim.knee.value = 0; pLim.ratio.value = 20; pLim.attack.value = 0.003; pLim.release.value = 0.12;
+    src.connect(pGain); pGain.connect(pCtx.destination);
+    return true;
+  }catch(e){ pCtx = null; pGain = null; pLim = null; return false; }
+}
+function routeLimiter(on){
+  if(!pGain || on === limOn) return;
+  pGain.disconnect();
+  if(on){ pGain.connect(pLim); pLim.connect(pCtx.destination); } else { try{ pLim.disconnect(); }catch(e){} pGain.connect(pCtx.destination); }
+  limOn = on;
+}
+function targetLoud(){
+  const v = order.map(id => T[id].feat).filter(Boolean).map(f => f.loud).sort((a, b) => a - b);
+  if(v.length < 2) return null;
+  const m = v.length >> 1; return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+}
+function autoGainDb(t){
+  if(agMode === 'off' || !t || !t.feat) return 0;
+  const tg = targetLoud(); if(tg === null) return 0;
+  return Math.max(-12, Math.min(6, tg - t.feat.loud)) * (agMode === 'light' ? 0.5 : 1);
+}
+function applyGain(){
+  const t = T[currentId], db = autoGainDb(t), lin = Math.pow(10, db / 20);
+  if(pGain){ routeLimiter(agMode !== 'off'); pGain.gain.value = lin; audio.volume = 1; } else audio.volume = Math.min(1, lin);
+  const el = $('#agInfo');
+  if(el) el.textContent = (agMode === 'off' || !t) ? '' : (t.feat ? (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB' : '...');
+}
+
 /* ---------- Laden ---------- */
 function loadPlaylist(text, name){
-  const items = parseM3U(text);
+  let items = parseM3U(text);
   if(!items.length){ toast('No tracks found in this file.'); return; }
+  cutFrom = items.length > MAX_TRACKS ? items.length : 0;
+  if(cutFrom) items = items.slice(0, MAX_TRACKS);
   if(currentId){ audio.pause(); currentId = null; }
   T = {}; order = []; undoStack.length = 0; tempoSet = false;
   items.forEach((it, i) => {
@@ -535,12 +579,13 @@ function loadPlaylist(text, name){
   $('#genNote').textContent = '';
   refresh();
   refreshTracks();
+  if(cutFrom) toast('The playlist has ' + cutFrom + ' tracks. SETRA loads the first ' + MAX_TRACKS + '.');
 }
 function updateStatus(){
   const el = $('#fileStatus');
   if(!order.length){ el.textContent = 'No playlist loaded'; el.classList.remove('ok'); return; }
   let found = 0; order.forEach(id => { if(files.has(T[id].file)) found++; });
-  el.textContent = order.length + ' tracks, ' + found + ' files found';
+  el.textContent = order.length + ' tracks, ' + found + ' files found' + (cutFrom ? ' (first ' + MAX_TRACKS + ' of ' + cutFrom + ')' : '');
   el.classList.toggle('ok', found === order.length);
 }
 async function readTags(t, f){
@@ -617,6 +662,7 @@ function applyEstimates(){
   const est = order.map(id => T[id]).filter(t => t.feat && t.src !== 'tag' && t.src !== 'manual');
   const sc = scoreEnergies(est.map(t => t.feat));
   est.forEach((t, i) => { t.energy = sc[i]; t.src = 'est'; });
+  applyGain();
 }
 function midTempo(){
   const b = order.map(id => T[id].bpm).filter(Boolean);
@@ -628,11 +674,11 @@ let tempoSet = false;
 let analysisRunning = false;
 async function runAnalysis(){
   if(analysisRunning) return; analysisRunning = true;
-  const todo = () => order.map(id => T[id]).filter(t => files.has(t.file) && !t.feat && !t.anaFailed && t.src !== 'tag' && t.src !== 'manual');
+  const todo = () => order.map(id => T[id]).filter(t => files.has(t.file) && !t.feat && !t.anaFailed && (agMode !== 'off' || (t.src !== 'tag' && t.src !== 'manual')));
   try{
     const total = todo().length; let done = 0, q;
     while((q = todo()).length){
-      $('#anaStatus').textContent = 'Estimating energy ' + (done + 1) + ' of ' + total + ' ...';
+      $('#anaStatus').textContent = 'Analyzing ' + (done + 1) + ' of ' + total + ' ...';
       await analyzeTrack(q[0]); done++;
       applyEstimates(); renderList(); await tick();
     }
@@ -846,6 +892,8 @@ function applyRate(){
   el.title = Math.abs(pct) > 6 ? 'Heavily stretched: sound and groove suffer' : '';
 }
 $('#mtMid').addEventListener('click', () => { mtOn.checked = true; setMid(); });
+$('#agSel').value = agMode;
+$('#agSel').addEventListener('change', e => { agMode = e.target.value; try{ localStorage.setItem('setra.autogain', agMode); }catch(err){} applyGain(); if(agMode !== 'off' && order.length) runAnalysis(); });
 mtOn.addEventListener('change', applyRate); mtBpm.addEventListener('input', applyRate);
 audio.addEventListener('loadedmetadata', () => { applyRate(); $('#tDur').textContent = fmt(audio.duration); });
 function updatePlayBtn(){ $('#btnPlay').innerHTML = (currentId && !audio.paused) ? ICON.pause : ICON.play; }
@@ -855,6 +903,7 @@ function playTrack(id){
   if(currentUrl) URL.revokeObjectURL(currentUrl);
   currentUrl = URL.createObjectURL(f); currentId = id;
   audio.src = currentUrl; applyRate();
+  ensurePlaybackGraph(); if(pCtx && pCtx.state === 'suspended') pCtx.resume(); applyGain();
   $('#nowTitle').textContent = t.title; $('#nowArtist').textContent = t.artist;
   $('#tDur').textContent = fmt(t.dur);
   $('#tInfo').textContent = (t.bpm ? t.bpm.toFixed(1) + ' BPM' : 'no BPM') + '   ' + (t.key || 'no key') + '   Energy ' + (t.energy == null ? '-' : t.energy);
