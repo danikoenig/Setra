@@ -7,9 +7,9 @@
 <style>
 /* Layout: ein Arbeitsblatt von oben nach unten (Verlauf, Generator, Liste, Export), Player fest am unteren Rand. Einzelnes dunkles Theme, bewusst. */
 :root{
-  --bg:#0d1117; --panel:#141a23; --panel2:#1b2330; --line:#263142;
-  --text:#eceae6; --muted:#8793a6; --accent:#2f7bff;
-  --ok:#6fbf8e; --warn:#e0b04a; --orange:#ff5a36; --frame:rgba(255,90,54,.55);
+  --bg:#121316; --panel:#16171a; --panel2:#202127; --line:#2f3653;
+  --text:#eceae6; --muted:#8a8c96; --accent:#c27c3f;
+  --ok:#6fbf8e; --warn:#e0b04a; --orange:#ff5a36; --frame:rgba(214,137,70,.7);
   --font:"Helvetica Neue",Helvetica,Arial,sans-serif;
   color-scheme:dark;
 }
@@ -30,7 +30,7 @@ h1 small{font-size:15px;font-weight:400;letter-spacing:0;color:var(--muted);marg
 h2{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:0}
 .loader{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .btn{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font-weight:600}
-.btn:hover{border-color:#3d4d66}
+.btn:hover{border-color:#4a4f66}
 .btn:focus-visible,.icon:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.primary:hover{filter:brightness(1.08)}
@@ -58,9 +58,9 @@ select,input[type=text],input[type=number]{background:var(--panel2);border:1px s
 .head{padding:0 8px 8px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--line)}
 .row{padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .row:last-child{border-bottom:0}
-.row.playing{background:#13213a;box-shadow:inset 3px 0 0 var(--accent)}
+.row.playing{background:#2a1e12;box-shadow:inset 3px 0 0 var(--accent)}
 .row.dragging{opacity:.4}
-@keyframes beat{0%{background:#162a47;box-shadow:inset 3px 0 0 var(--accent),0 0 7px rgba(47,123,255,.14)}100%{background:#13213a;box-shadow:inset 3px 0 0 var(--accent),0 0 0 rgba(47,123,255,0)}}
+@keyframes beat{0%{background:#33241a;box-shadow:inset 3px 0 0 var(--accent),0 0 7px rgba(194,124,63,.14)}100%{background:#2a1e12;box-shadow:inset 3px 0 0 var(--accent),0 0 0 rgba(194,124,63,0)}}
 .row.playing.live{animation:beat var(--beat,.48s) ease-out infinite}
 .row.drop-before{box-shadow:inset 0 2px 0 var(--accent)}
 .row.drop-after{box-shadow:inset 0 -2px 0 var(--accent)}
@@ -98,8 +98,8 @@ input.key::placeholder,input.bpm::placeholder{color:var(--muted);font-weight:400
 details{margin-top:10px}
 summary{cursor:pointer;color:var(--muted)}
 textarea{width:100%;min-height:120px;margin-top:8px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:8px;font-family:Menlo,Consolas,monospace;font-size:12px;resize:vertical}
-#player{position:fixed;left:0;right:0;bottom:0;padding:0 16px 14px;background:linear-gradient(to bottom,rgba(13,17,23,0),var(--bg) 18px);z-index:5;pointer-events:none}
-.pl{pointer-events:auto;max-width:1148px;margin:0 auto;background:#0f141c;border:1px solid var(--frame);border-radius:8px;padding:12px 16px 12px;display:grid;grid-template-columns:minmax(160px,1fr) auto minmax(220px,1fr);gap:10px 18px;align-items:center;box-shadow:0 -10px 24px rgba(13,17,23,.9)}
+#player{position:fixed;left:0;right:0;bottom:0;padding:0 16px 14px;background:linear-gradient(to bottom,rgba(18,19,22,0),var(--bg) 18px);z-index:5;pointer-events:none}
+.pl{pointer-events:auto;max-width:1148px;margin:0 auto;background:#121316;border:1px solid var(--frame);border-radius:8px;padding:12px 16px 12px;display:grid;grid-template-columns:minmax(160px,1fr) auto minmax(220px,1fr);gap:10px 18px;align-items:center;box-shadow:0 -10px 24px rgba(18,19,22,.9)}
 .seekwrap{grid-column:1/-1;display:flex;flex-direction:column;gap:4px}
 @media(max-width:820px){.pl{grid-template-columns:1fr}}
 .now .t1{font-size:15px}
@@ -114,15 +114,15 @@ textarea{width:100%;min-height:120px;margin-top:8px;background:var(--panel2);bor
 .btn.sm{padding:4px 9px;font-size:12px}
 .qm{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);font-weight:700;color:var(--muted);padding:0}
 .qm:hover{color:var(--text);border-color:var(--accent)}
-.help{display:none;position:absolute;right:0;top:calc(100% + 8px);width:min(420px,88vw);background:#1b2330;border:1px solid #3d4d66;border-radius:8px;padding:12px 14px;z-index:30;font-size:13px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.help{display:none;position:absolute;right:0;top:calc(100% + 8px);width:min(420px,88vw);background:#202127;border:1px solid #4a4f66;border-radius:8px;padding:12px 14px;z-index:30;font-size:13px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .help.open{display:block}
 .help b{color:var(--text)}
 .help code{background:var(--panel);padding:1px 5px;border-radius:4px;font-size:12px;word-break:break-all}
 .help p{margin:0 0 8px}.help p:last-child{margin:0}
 .hwrap{position:relative;display:inline-flex}
-#toast{position:fixed;left:50%;bottom:calc(clamp(96px,20vh,170px) + 170px);transform:translateX(-50%);background:#1f2a3a;border:1px solid #3d4d66;border-radius:6px;padding:8px 14px;max-width:92vw;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast{position:fixed;left:50%;bottom:calc(clamp(96px,20vh,170px) + 170px);transform:translateX(-50%);background:#202127;border:1px solid #4a4f66;border-radius:6px;padding:8px 14px;max-width:92vw;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
 #toast.show{opacity:1}
-body.dropping::after{content:"Drop playlist and music folder here";position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:10px;display:grid;place-items:center;font-size:20px;font-weight:700;background:rgba(13,17,23,.86);z-index:20;pointer-events:none}
+body.dropping::after{content:"Drop playlist and music folder here";position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:10px;display:grid;place-items:center;font-size:20px;font-weight:700;background:rgba(18,19,22,.86);z-index:20;pointer-events:none}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}.row.playing.live{animation:none}}
 </style>
 </head>
@@ -468,7 +468,7 @@ function scoreEnergies(F){
 }
 function fmt(s){ if(!isFinite(s)) s = 0; s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 function ramp(e01){
-  const stops = [[79,124,172],[214,169,74],[255,90,54]];
+  const stops = [[96,100,120],[214,169,74],[255,90,54]];
   const x = Math.min(1, Math.max(0, e01)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
   const a = stops[i], b = stops[i+1];
   return 'rgb(' + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',') + ')';
@@ -788,15 +788,15 @@ function drawSet(){
   const c = $('#setChart'), s = setupCanvas(c), g = s.g, w = s.w, h = s.h; g.clearRect(0, 0, w, h);
   const n = order.length;
   g.font = FONT;
-  if(!n){ g.fillStyle = '#8793a6'; g.textAlign = 'center'; g.fillText('The energy of your set will show here', w / 2, h / 2 + 4); return; }
+  if(!n){ g.fillStyle = '#8a8c96'; g.textAlign = 'center'; g.fillText('The energy of your set will show here', w / 2, h / 2 + 4); return; }
   const padT = 18, padB = 20, plotH = h - padT - padB, slot = w / n, bw = Math.max(6, slot * 0.64);
-  g.strokeStyle = '#263142'; g.lineWidth = 1;
+  g.strokeStyle = '#2f3653'; g.lineWidth = 1;
   [0, 5, 10].forEach(v => { const y = padT + plotH * (1 - v / 10); g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); });
   order.forEach((id, i) => {
     const t = T[id], x = i * slot + (slot - bw) / 2, e = t.energy || 0, bh = plotH * e / 10;
     if(e){ g.fillStyle = ramp((e - 1) / 9); g.globalAlpha = t.src === 'est' ? 0.8 : 1; g.fillRect(x, padT + plotH - bh, bw, bh); g.globalAlpha = 1; }
     if(id === currentId){ g.strokeStyle = '#eceae6'; g.lineWidth = 2; g.strokeRect(x - 1, padT + plotH - bh - 1, bw + 2, bh + 2); g.lineWidth = 1; }
-    g.fillStyle = '#8793a6'; g.textAlign = 'center';
+    g.fillStyle = '#8a8c96'; g.textAlign = 'center';
     g.fillText(t.bpm ? String(Math.round(t.bpm)) : '-', x + bw / 2, padT - 5);
     g.fillText(String(i + 1), x + bw / 2, h - 5);
   });
@@ -925,7 +925,7 @@ audio.addEventListener('ended', () => step(1));
 function durOf(t){ return (isFinite(audio.duration) && audio.duration > 0) ? audio.duration : (t.dur || (t.feat ? t.feat.dur : 0) || 1); }
 function drawSeek(){
   const c = $('#seek'), s = setupCanvas(c), g = s.g, w = s.w, h = s.h; g.clearRect(0, 0, w, h);
-  const t = T[currentId]; g.font = FONT; g.textAlign = 'center'; g.fillStyle = '#8793a6';
+  const t = T[currentId]; g.font = FONT; g.textAlign = 'center'; g.fillStyle = '#8a8c96';
   if(!t){ g.fillText('Pick a track to see its waveform', w / 2, h / 2 + 4); return; }
   const D = durOf(t), mid = h / 2, cur = audio.currentTime || 0, px = cur / D * w;
   if(t.feat){
@@ -936,7 +936,7 @@ function drawSeek(){
     }
     g.globalAlpha = 1;
   } else g.fillText(t.anaFailed ? 'Waveform not available for this file' : 'Analyzing waveform ...', w / 2, h / 2 + 4);
-  g.fillStyle = '#4d8dff'; g.fillRect(px - 1, 0, 2, h);
+  g.fillStyle = '#e39a52'; g.fillRect(px - 1, 0, 2, h);
   $('#tCur').textContent = fmt(cur);
 }
 $('#seek').addEventListener('click', e => {
